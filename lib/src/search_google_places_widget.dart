@@ -123,9 +123,9 @@ class _SearchMapPlaceWidgetState extends State<SearchGooglePlacesWidget>
 
     if (widget.hasClearButton!) {
       _fn.addListener(() async {
-        if (_fn.hasFocus)
+        if (_fn.hasFocus) if (mounted)
           setState(() => _crossFadeState = CrossFadeState.showSecond);
-        else
+        else if (mounted)
           setState(() => _crossFadeState = CrossFadeState.showFirst);
       });
       _crossFadeState = CrossFadeState.showFirst;
@@ -288,7 +288,7 @@ class _SearchMapPlaceWidgetState extends State<SearchGooglePlacesWidget>
       if (_currentInput == _tempInput) {
         final predictions = await _makeRequest(_currentInput);
         await _animationController!.animateTo(0.5);
-        setState(() => _placePredictions = predictions);
+        if (mounted) setState(() => _placePredictions = predictions);
         await _animationController!.forward();
 
         _textEditingController.addListener(_autocompletePlace);
@@ -357,10 +357,12 @@ class _SearchMapPlaceWidgetState extends State<SearchGooglePlacesWidget>
     if (!_animationController!.isDismissed)
       await _animationController!.animateTo(0.5);
     _fn.unfocus();
-    setState(() {
-      _placePredictions = [];
-      _isEditing = false;
-    });
+    if (mounted) {
+      setState(() {
+        _placePredictions = [];
+        _isEditing = false;
+      });
+    }
     _animationController!.reverse();
     _textEditingController.addListener(_autocompletePlace);
   }
@@ -368,7 +370,7 @@ class _SearchMapPlaceWidgetState extends State<SearchGooglePlacesWidget>
   /// Will listen for input changes every 0.5 seconds, allowing us to make API requests only when the user stops typing.
   void customListener() {
     Future.delayed(Duration(milliseconds: 500), () {
-      setState(() => _tempInput = _textEditingController.text);
+      if (mounted) setState(() => _tempInput = _textEditingController.text);
       customListener();
     });
   }
